@@ -17,8 +17,14 @@ public class TodoService {
     @Autowired
     private TodoRepository todoRepository;
 
-    public List<TodoTask> getAllTodoTasks() {
+    public List<TodoTask> getAllTodoTasks(String name, String status, String priority) {
         return todoRepository.getAllTodoTasks();
+
+        //TODO: refactor this code and fix Enum conversion
+//        if(!name.equals("") && (status.equals("ALL") || status.equals("")) && (priority.equals("ALL") || priority.equals(""))) {
+//            return todoRepository.getAllTodoTasks();
+//        }
+//        return todoRepository.findByNameAndPriorityAndStatusOfTask(name, status, priority);
     }
 
     public Optional<TodoTask> getById(Integer id) {

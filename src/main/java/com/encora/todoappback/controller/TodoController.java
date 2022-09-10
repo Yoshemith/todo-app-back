@@ -12,14 +12,17 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "http://localhost:8080")
 public class TodoController {
 
     @Autowired
     private TodoService todoService;
 
     @GetMapping("/todos")
-    public ResponseEntity<?> getAllTodoTasks() {
-        List<TodoTask> todoTasks = todoService.getAllTodoTasks();
+    public ResponseEntity<?> getTodoTasks(@RequestParam(required = false, defaultValue = "") String name,
+                                          @RequestParam(required = false, defaultValue = "") String status,
+                                          @RequestParam(required = false, defaultValue = "") String priority) {
+        List<TodoTask> todoTasks = todoService.getAllTodoTasks(name, status, priority);
         return ResponseEntity.ok(todoTasks);     //ResponseEntity.status(HttpStatus.OK).body(todoTasks);
     }
 

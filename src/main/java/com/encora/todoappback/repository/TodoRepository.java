@@ -16,26 +16,88 @@ public class TodoRepository {
     private Integer idCounter = 1;
     private List<TodoTask> todoTasks = new ArrayList<>();
 
-    public void dummyData() {
-        LocalDate dueDate = LocalDate.of(2022, 10, 13);
-        LocalDateTime dateOfCreation = LocalDateTime.now();
-        TodoTask task1 = new TodoTask();
-        task1.setId(idCounter++);
-        task1.setName("Mi primer todo task xdxd");
-        task1.setDueDate(dueDate);
-        task1.setIsDone(false);
-        task1.setPriority(Priority.HIGH);
-        task1.setCreationDate(dateOfCreation);
-
-        todoTasks.add(task1);
-    }
-
     public List<TodoTask> getAllTodoTasks() {
-        if (todoTasks.size() == 0) {
-            dummyData();
-        }
         return todoTasks;
     }
+
+    public List<TodoTask> findByNameAndPriorityAndStatusOfTask(String name, String status, String priority) {
+        if(name.equals("") && !status.equals("ALL") && !priority.equals("ALL")){
+            return findByStatusAndPriority(status, priority);
+        }
+        if(name.equals("") && status.equals("ALL") && !priority.equals("ALL")){
+            return findByPriority(priority);
+        }
+        if(name.equals("") && !status.equals("ALL") && priority.equals("ALL")){
+            return findByStatus(status);
+        }
+        if(!name.equals("") && status.equals("ALL") && !priority.equals("ALL")) {
+            return findByNameAndPriority(name, priority);
+        }
+        if(!name.equals("") && !status.equals("ALL") && priority.equals("ALL")) {
+            return findByNameAndStatus(name, status);
+        }
+
+        List<TodoTask> byNameAndPriorityList = findByName(name).stream().filter(task -> task.getPriority().equals(Priority.valueOf(priority))).toList();
+
+        boolean statusTask;
+        if (status.equals("DONE")){
+            statusTask = true;
+        } else {
+            statusTask = false;
+        }
+
+        List<TodoTask> resultListByStatus = byNameAndPriorityList.stream()
+                .filter(task -> task.getIsDone().equals(statusTask)).toList();
+
+        return resultListByStatus;
+    }
+
+    public List<TodoTask> findByName(String name) {
+        List<TodoTask> foundTasksByNameList = todoTasks.stream()
+                .filter(task -> task.getName().toLowerCase().contains(name.toLowerCase())).toList();
+        return foundTasksByNameList;
+    }
+
+    public List<TodoTask> findByPriority(String priority) {
+        List<TodoTask> foundTasksByPriorityList = todoTasks.stream()
+                .filter(task -> task.getPriority().equals(Priority.valueOf(priority))).toList();
+
+        return foundTasksByPriorityList;
+    }
+
+    public List<TodoTask> findByStatus(String status) {
+        Boolean statusTask;
+        if (status.equals("DONE")){
+            statusTask = true;
+        } else {
+            statusTask = false;
+        }
+        List<TodoTask> foundTasksByStatusList = todoTasks.stream()
+                .filter(task -> task.getIsDone().equals(statusTask)).toList();
+
+        return foundTasksByStatusList;
+    }
+
+    public List<TodoTask> findByStatusAndPriority(String status, String priority) {
+        Priority priorityTask = Priority.valueOf(priority);
+        List<TodoTask> result = findByStatus(status).stream()
+                .filter(task -> task.getPriority().equals(priorityTask)).toList();
+        return result;
+    }
+
+    public List<TodoTask> findByNameAndPriority(String name, String priority) {
+        List<TodoTask> result = findByName(name).stream()
+                .filter(task -> task.getPriority().equals(Priority.valueOf(priority))).toList();
+        return result;
+    }
+
+    public List<TodoTask> findByNameAndStatus(String name, String status) {
+        List<TodoTask> result = findByName(name).stream()
+                .filter(task -> task.getIsDone().equals(status)).toList();
+        return result;
+    }
+
+
 
     public TodoTask getById(Integer id) {
         if (!existsById(id)) return null;
@@ -55,10 +117,6 @@ public class TodoRepository {
     }
 
     public void delete(Integer id) {
-        //todoTasks.remove(id);
-//        todoTasks.stream()
-//                .filter(task -> !task.getId().equals(id))
-//                .collect(Collectors.toList());
         todoTasks.removeIf(task -> task.getId().equals(id));
     }
 
