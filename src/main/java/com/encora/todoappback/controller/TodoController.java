@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,10 +20,11 @@ public class TodoController {
     private TodoService todoService;
 
     @GetMapping("/todos")
-    public ResponseEntity<?> getTodoTasks(@RequestParam(required = false, defaultValue = "") String name,
-                                          @RequestParam(required = false, defaultValue = "") String status,
-                                          @RequestParam(required = false, defaultValue = "") String priority) {
-        List<TodoTask> todoTasks = todoService.getAllTodoTasks(name, status, priority);
+    public ResponseEntity<?> getTodoTasks(@RequestParam(required = false, defaultValue = "1") Integer page,
+                                          @RequestParam(required = false, defaultValue = "") String name,
+                                          @RequestParam(required = false, defaultValue = "ALL") String status,
+                                          @RequestParam(required = false, defaultValue = "ALL") String priority) {
+        HashMap<String, Object> todoTasks = todoService.getTodoTasks(page, name, status, priority);
         return ResponseEntity.ok(todoTasks);     //ResponseEntity.status(HttpStatus.OK).body(todoTasks);
     }
 
@@ -36,14 +38,12 @@ public class TodoController {
     @PostMapping("/todos")
     public ResponseEntity<?> createNewTodoTask(@RequestBody TodoTask task) {
         TodoTask todoTask = todoService.createTodoTask(task);
-
         return ResponseEntity.ok(todoTask);
     }
 
     @PutMapping("/todos/{id}")
     public ResponseEntity<?> updateTodoTask(@PathVariable Integer id, @RequestBody TodoTask todoTask) {
         TodoTask updatedTodoTask = todoService.updateTodoTask(id, todoTask);
-
         return ResponseEntity.ok(updatedTodoTask);
     }
     @PutMapping("/todos/{id}/done")
@@ -67,6 +67,12 @@ public class TodoController {
         return ResponseEntity
                 .status(HttpStatus.GONE)
                 .body("Todo Task Deleted!");
+    }
+
+    @GetMapping("/todos/metrics")
+    public ResponseEntity<?> getTodosMetrics() {
+        HashMap<String, Object> todoMetrics = todoService.getTodosMetrics();
+        return ResponseEntity.ok(todoMetrics);
     }
 
 }
