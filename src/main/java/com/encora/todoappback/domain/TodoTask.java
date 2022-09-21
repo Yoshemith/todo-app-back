@@ -2,12 +2,9 @@ package com.encora.todoappback.domain;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-//import javax.persistence.Entity;
 
-//@Entity
 public class TodoTask {
 
-     //@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;
     private LocalDate dueDate;

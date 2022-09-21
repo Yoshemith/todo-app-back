@@ -5,12 +5,9 @@ import com.encora.todoappback.domain.TodoTask;
 import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Repository
 public class TodoRepository {
@@ -83,6 +80,15 @@ public class TodoRepository {
         return foundTasksByStatusList;
     }
 
+    public List<TodoTask> getTodoTasksByPage(List<TodoTask> todoTasksList, Integer page) {
+        final int todoTasksPerPage = 10;
+        int fromStart = (page - 1) * todoTasksPerPage;
+        int toLimit = Math.min(fromStart + todoTasksPerPage, todoTasksList.size());
+        List<TodoTask> paginatedList = todoTasksList.subList(fromStart, toLimit);
+
+        return paginatedList;
+    }
+
     public TodoTask getById(Integer id) {
         if (!existsById(id)) return null;
 
@@ -145,10 +151,10 @@ public class TodoRepository {
             }
         }
 
-        totalAverageTime = totalFinishedTodos > 0 ? totalAverageTime / totalFinishedTodos : 0;
-        highPriorityAverageTime =  highFinishedTodos > 0 ? highPriorityAverageTime / highFinishedTodos : 0;
-        mediumPriorityAverageTime = mediumFinishedTodos > 0 ? mediumPriorityAverageTime / mediumFinishedTodos : 0;
-        lowPriorityAverageTime = lowFinishedTodos > 0 ? lowPriorityAverageTime / lowFinishedTodos : 0;
+        totalAverageTime = totalAverageTime > 0 ? totalAverageTime / totalFinishedTodos : 0;
+        highPriorityAverageTime =  highPriorityAverageTime > 0 ? highPriorityAverageTime / highFinishedTodos : 0;
+        mediumPriorityAverageTime = mediumPriorityAverageTime > 0 ? mediumPriorityAverageTime / mediumFinishedTodos : 0;
+        lowPriorityAverageTime = lowPriorityAverageTime > 0 ? lowPriorityAverageTime / lowFinishedTodos : 0;
 
         metricsValues.put("total", formattedTime(totalAverageTime));
         metricsValues.put("highPriority", formattedTime(highPriorityAverageTime));
@@ -164,26 +170,31 @@ public class TodoRepository {
         }
 
         String formattedTimeResult = "";
-        int timeLeftInSeconds = totalTimeInSeconds % 60;
-        int timeInMinutes = (totalTimeInSeconds / 60) % 60;
-        int timeInHours = ((totalTimeInSeconds / 60) / 60) % 24;
-        int timeInDays = ((totalTimeInSeconds / 60) / 60) / 24;
+        int seconds = totalTimeInSeconds % 60;
+        int minutes = (totalTimeInSeconds / 60) % 60;
+        int hours = ((totalTimeInSeconds / 60) / 60) % 24;
+        int days = ((totalTimeInSeconds / 60) / 60) / 24;
 
-        if(timeInDays == 0) {
-            if (timeInHours == 0) {
-                if (timeInMinutes == 0) {
-                    formattedTimeResult = timeLeftInSeconds + " Seconds.";
+        if(days == 0) {
+            if (hours == 0) {
+                if (minutes == 0) {
+                    formattedTimeResult = timeToString(seconds) + " Seconds";
                 } else {
-                    formattedTimeResult = timeInMinutes + ":" + timeLeftInSeconds + " Minutes.";
+                    formattedTimeResult = timeToString(minutes) + ":" + timeToString(seconds) + " Minutes";
                 }
             } else {
-                formattedTimeResult = timeInHours + ":" + timeInMinutes + ":" + timeLeftInSeconds + " Hours.";
+                formattedTimeResult = timeToString(hours) + ":" + timeToString(minutes) + ":" + timeToString(seconds) + " Hours";
             }
         } else {
-            formattedTimeResult = timeInDays + " Days, " + timeInHours + ":" + timeInMinutes + ":" + timeLeftInSeconds + " Hours.";
+            formattedTimeResult = days + " Days, " + timeToString(hours) + ":" + timeToString(minutes) + ":" + timeToString(seconds) + " Hours";
         }
 
         return formattedTimeResult;
+    }
+
+    public String timeToString(Integer time) {
+        String formattedTimeString = time < 10 ? "0" + time : Integer.toString(time);
+        return formattedTimeString;
     }
 
 }
