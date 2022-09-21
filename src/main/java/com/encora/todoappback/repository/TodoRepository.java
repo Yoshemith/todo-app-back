@@ -5,9 +5,8 @@ import com.encora.todoappback.domain.TodoTask;
 import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 public class TodoRepository {
@@ -79,6 +78,81 @@ public class TodoRepository {
 
         return foundTasksByStatusList;
     }
+
+    public List<TodoTask> sortingBy(List<TodoTask> todoTasksList, Integer sorting, String order) {
+        switch (sorting) {
+            case 1 -> {
+                return sortByPriority(todoTasksList, order);
+            }
+            case 2 -> {
+                return sortByDueDate(todoTasksList, order);
+            }
+            case 3 -> {
+                //HERE: PRIORITY IS THE TOP-LEVEL HIERARCHY
+                return sortByPriorityAndDueDate(todoTasksList);
+            }
+            case 4 -> {
+                //HERE: DUE DATE IS THE TOP-LEVEL HIERARCHY
+                return sortByDueDateAndPriority(todoTasksList);
+            }
+        }
+
+        return todoTasksList;
+    }
+
+    public List<TodoTask> sortByPriority(List<TodoTask> todoTasksList, String order) {
+        List<TodoTask> sortedByPriorityList = todoTasksList.stream()
+                .sorted(Comparator.comparing(todo -> todo.getPriorityHierarchy()))
+                .collect(Collectors.toList());
+
+        if (order.equals("DESC")) {
+            Collections.reverse(sortedByPriorityList);
+        }
+
+        return sortedByPriorityList;
+
+    }
+
+    public List<TodoTask> sortByDueDate(List<TodoTask> todoTasksList, String order) {
+        List<TodoTask> sortedByDueDateList;
+
+        if (order.equals("DESC")) {
+            //IN DESCENDANT ORDER
+            sortedByDueDateList = todoTasksList.stream()
+                    .sorted(Comparator.comparing(TodoTask::getDueDate,
+                            Comparator.nullsFirst(Comparator.naturalOrder())).reversed())
+                    .collect(Collectors.toList());
+            return sortedByDueDateList;
+        }
+
+        sortedByDueDateList = todoTasksList.stream()
+                .sorted(Comparator.comparing(TodoTask::getDueDate,
+                        Comparator.nullsLast(Comparator.naturalOrder())))
+                .collect(Collectors.toList());
+
+        return sortedByDueDateList;
+    }
+
+    public List<TodoTask> sortByPriorityAndDueDate(List<TodoTask> todoTasksList) {
+        List<TodoTask> sortedByPriorityAndDueDateList = todoTasksList.stream()
+                .sorted(Comparator.comparing(TodoTask::getPriorityHierarchy)
+                        .thenComparing(TodoTask::getDueDate,
+                                Comparator.nullsLast(Comparator.naturalOrder())))
+                .collect(Collectors.toList());
+
+        return sortedByPriorityAndDueDateList;
+    }
+
+    public List<TodoTask> sortByDueDateAndPriority(List<TodoTask> todoTasksList) {
+        List<TodoTask> sortedByDueDateAndPriorityList = todoTasksList.stream()
+                .sorted(Comparator.comparing(TodoTask::getDueDate,
+                                Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(TodoTask::getPriorityHierarchy))
+                .collect(Collectors.toList());
+
+        return sortedByDueDateAndPriorityList;
+    }
+
 
     public List<TodoTask> getTodoTasksByPage(List<TodoTask> todoTasksList, Integer page) {
         final int todoTasksPerPage = 10;
@@ -196,5 +270,6 @@ public class TodoRepository {
         String formattedTimeString = time < 10 ? "0" + time : Integer.toString(time);
         return formattedTimeString;
     }
+
 
 }

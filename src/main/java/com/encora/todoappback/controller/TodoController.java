@@ -21,19 +21,21 @@ public class TodoController {
     public ResponseEntity<?> getTodoTasks(@RequestParam(required = false, defaultValue = "1") Integer page,
                                           @RequestParam(required = false, defaultValue = "") String name,
                                           @RequestParam(required = false, defaultValue = "ALL") String status,
-                                          @RequestParam(required = false, defaultValue = "ALL") String priority) {
+                                          @RequestParam(required = false, defaultValue = "ALL") String priority,
+                                          @RequestParam(required = false, defaultValue = "") Integer sorting,
+                                          @RequestParam(required = false, defaultValue = "ASC") String order) {
 
-        HashMap<String, Object> response = todoService.getTodoTasks(page, name, status, priority);
+        HashMap<String, Object> response = todoService.getTodoTasks(page, name, status, priority, sorting, order);
 
         if (response == null) {
             response = new HashMap<>();
-            response.put("httpStatus", 204);
-            response.put("message", "There is no data available");
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);
+            response.put("httpStatus", 404);
+            response.put("httpMessage", "There is no data available");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
         response.put("httpStatus", 200);
-        response.put("message", "OK");
+        response.put("httpMessage", "OK");
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -62,7 +64,7 @@ public class TodoController {
         HashMap<String, Object> response = new HashMap<>();
 
         response.put("httpStatus", 201);
-        response.put("message", "CREATED");
+        response.put("httpMessage", "CREATED");
         response.put("data", todoTask);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -71,57 +73,19 @@ public class TodoController {
     @PutMapping("/todos/{id}")
     public ResponseEntity<?> updateTodoTask(@PathVariable Integer id, @RequestBody TodoTask todoTask) {
         TodoTask updatedTodoTask = todoService.updateTodoTask(id, todoTask);
-        HashMap<String, Object> response = new HashMap<>();
-
-        if (updatedTodoTask == null) {
-            response = new HashMap<>();
-            response.put("httpStatus", 404);
-            response.put("message", "NOT FOUND");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
-
-        response.put("data", updatedTodoTask);
-        response.put("httpStatus", 200);
-        response.put("message", "OK");
-
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return getResponseEntity(updatedTodoTask);
     }
+
     @PutMapping("/todos/{id}/done")
     public ResponseEntity<?> setTaskToDone(@PathVariable Integer id) {
         TodoTask updatedTodoTask = todoService.setTaskToDone(id);
-        HashMap<String, Object> response = new HashMap<>();
-
-        if (updatedTodoTask == null) {
-            response = new HashMap<>();
-            response.put("httpStatus", 404);
-            response.put("message", "NOT FOUND");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
-
-        response.put("data", updatedTodoTask);
-        response.put("httpStatus", 200);
-        response.put("message", "OK");
-
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return getResponseEntity(updatedTodoTask);
     }
 
     @PutMapping("/todos/{id}/undone")
     public ResponseEntity<?> setTaskToUndone(@PathVariable Integer id) {
         TodoTask updatedTodoTask = todoService.setTaskToUndone(id);
-        HashMap<String, Object> response = new HashMap<>();
-
-        if (updatedTodoTask == null) {
-            response = new HashMap<>();
-            response.put("httpStatus", 404);
-            response.put("message", "NOT FOUND");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
-
-        response.put("data", updatedTodoTask);
-        response.put("httpStatus", 200);
-        response.put("message", "OK");
-
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return getResponseEntity(updatedTodoTask);
     }
 
     @DeleteMapping("/todos/{id}")
@@ -130,13 +94,13 @@ public class TodoController {
 
         if (todoService.getById(id) == null) {
             response.put("httpStatus", 404);
-            response.put("message", "NOT FOUND");
+            response.put("httpMessage", "NOT FOUND");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
         todoService.deleteTodoTask(id);
         response.put("httpStatus", 200);
-        response.put("message", "Resource deleted successfully");
+        response.put("httpMessage", "Resource deleted successfully");
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -149,13 +113,30 @@ public class TodoController {
 
         if (response == null) {
             response = new HashMap<>();
-            response.put("httpStatus", 204);
-            response.put("message", "There is no data available");
-            ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);
+            response.put("httpStatus", 404);
+            response.put("httpMessage", "There is no data available");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
         response.put("httpStatus", 200);
-        response.put("message", "OK");
+        response.put("httpMessage", "OK");
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    private ResponseEntity<?> getResponseEntity(TodoTask updatedTodoTask) {
+        HashMap<String, Object> response = new HashMap<>();
+
+        if (updatedTodoTask == null) {
+            response = new HashMap<>();
+            response.put("httpStatus", 404);
+            response.put("httpMessage", "NOT FOUND");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        response.put("data", updatedTodoTask);
+        response.put("httpStatus", 200);
+        response.put("httpMessage", "OK");
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

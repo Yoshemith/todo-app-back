@@ -17,7 +17,7 @@ public class TodoService {
     @Autowired
     private TodoRepository todoRepository;
 
-    public HashMap<String, Object> getTodoTasks(Integer page, String name, String status, String priority) {
+    public HashMap<String, Object> getTodoTasks(Integer page, String name, String status, String priority, Integer sorting, String order) {
 
         if (todoRepository.getAllTodoTasks().size() == 0) {
             return null;
@@ -44,13 +44,14 @@ public class TodoService {
             todoTasksList = todoRepository.getAllTodoTasks();
         }
 
-        //TODO: Add a method here that'll do the sorting
+        //If the value of sorting is null, then, there is no need of sorting, otherwise we'll call the sortingBy method.
+        List<TodoTask> sortedTodoList = sorting == null ? todoTasksList : todoRepository.sortingBy(todoTasksList, sorting, order);
 
-        List<TodoTask> data = todoRepository.getTodoTasksByPage(todoTasksList, page);
-        int totalPages = (int) Math.ceil(todoTasksList.size() / 10d);
+        List<TodoTask> data = todoRepository.getTodoTasksByPage(sortedTodoList, page);
+        int totalPages = (int) Math.ceil(sortedTodoList.size() / 10d);
 
         result.put("data", data);
-        result.put("totalTodos", data.size());
+        result.put("totalTodos", todoTasksList.size());
         result.put("totalPages", totalPages);
         result.put("page", page);
         result.put("name", name);
@@ -135,6 +136,7 @@ public class TodoService {
         HashMap<String, Object> result = new HashMap<>();
 
         if (todoRepository.getAllTodoTasks().size() > 0) {
+
             HashMap<String, Object> data = todoRepository.getTodosMetrics();
             result.put("averageTimeBy", data);
 

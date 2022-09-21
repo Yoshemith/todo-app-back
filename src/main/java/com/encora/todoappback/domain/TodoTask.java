@@ -78,6 +78,21 @@ public class TodoTask {
         return priority;
     }
 
+    public Integer getPriorityHierarchy() {
+        switch (priority) {
+            case HIGH -> {
+                return 1;
+            }
+            case MEDIUM -> {
+                return 2;
+            }
+            case LOW -> {
+                return 3;
+            }
+        }
+        return null;
+    }
+
     public void setPriority(Priority priority) {
         this.priority = priority;
     }
@@ -89,4 +104,5 @@ public class TodoTask {
     public void setCreationDate(LocalDateTime creationDate) {
         this.creationDate = creationDate;
     }
+
 }
